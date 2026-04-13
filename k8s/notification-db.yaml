@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: notification-db-pvc
+  namespace: banking-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: notification-db-secret
+  namespace: banking-system
+type: Opaque
+data:
+  MONGO_INITDB_ROOT_USERNAME: bm90aWZfdXNlcg==
+  MONGO_INITDB_ROOT_PASSWORD: bm90aWZfcGFzcw==
+  MONGO_INITDB_DATABASE: bm90aWZpY2F0aW9uX2Ri
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-db
+  namespace: banking-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-db
+  template:
+    metadata:
+      labels:
+        app: notification-db
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7
+          ports:
+            - containerPort: 27017
+          envFrom:
+            - secretRef:
+                name: notification-db-secret
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          readinessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 20
+            periodSeconds: 20
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: notification-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-db
+  namespace: banking-system
+spec:
+  selector:
+    app: notification-db
+  ports:
+    - port: 27017
+      targetPort: 27017
+  type: ClusterIP

@@ -1,0 +1,45 @@
+# Local overrides and decrypted material (never commit real cluster credentials)
+.env
+.env.*
+!.env.example
+kubeconfig
+kubeconfig.*
+*.kubeconfig
+*kubeconfig*.yaml
+*.decrypted.yaml
+*.decrypted.yml
+secrets.local.yaml
+secrets.local.yml
+**/secrets/*.local.*
+
+# Terraform / OpenTofu (if added later)
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Helm (if charts with packaged dependencies are generated locally)
+charts/*.tgz
+
+# Temporary exports / scratch
+tmp/
+temp/
+*.tmp
+*.bak
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
