@@ -26,7 +26,7 @@ kubectl -n banking-system wait --for=condition=ready pod -l app=rabbitmq --timeo
 echo "--- Building and loading Docker images into Minikube ---"
 eval "$(minikube docker-env)"
 
-docker build -t banking-customer-service:latest "$ROOT_DIR/banking-customer-service"
+docker build -f "$ROOT_DIR/banking-customer-service/Dockerfile" -t banking-customer-service:latest "$ROOT_DIR"
 docker build -t banking-account-service:latest "$ROOT_DIR/banking-account-service"
 docker build -t banking-transaction-service:latest "$ROOT_DIR/banking-transaction-service"
 docker build -t banking-notification-service:latest "$ROOT_DIR/banking-notification-service"
