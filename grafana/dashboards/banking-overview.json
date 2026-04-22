@@ -10,9 +10,10 @@
       "title": "Request Rate (per service)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total[5m])) by (job)",
+          "expr": "sum by (job) (sum by (job) (rate(http_requests_total[5m])) or sum by (job) (rate(http_server_requests_seconds_count[5m])) or sum by (job) (rate(http_request_duration_seconds_count[5m])))",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
@@ -79,45 +80,113 @@
       "title": "Transactions Total",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(transactions_total) or vector(0)",
-          "refId": "A"
+          "expr": "sum(increase(transactions_total{job=\"transaction-service\"}[$__range]))",
+          "refId": "A",
+          "legendFormat": "transactions"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
     },
     {
       "title": "Failed Transfers",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(failed_transfers_total) or vector(0)",
-          "refId": "A"
+          "expr": "sum(increase(failed_transfers_total{job=\"transaction-service\"}[$__range]))",
+          "refId": "A",
+          "legendFormat": "failed"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
     },
     {
       "title": "Notifications Sent",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(notifications_sent_total) or vector(0)",
-          "refId": "A"
+          "expr": "sum(increase(notifications_sent_total{job=\"notification-service\"}[$__range]))",
+          "refId": "A",
+          "legendFormat": "sent"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
     },
     {
       "title": "Notifications Failed",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(notifications_failed_total) or vector(0)",
-          "refId": "A"
+          "expr": "sum(increase(notifications_failed_total{job=\"notification-service\"}[$__range]))",
+          "refId": "A",
+          "legendFormat": "failed"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
     },
     {
       "title": "Daily Limit Exceeded",
@@ -125,7 +194,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
       "targets": [
         {
-          "expr": "sum(rate(daily_limit_exceeded_total[5m]))",
+          "expr": "sum(rate(daily_limit_exceeded_total{job=\"transaction-service\"}[5m]))",
           "legendFormat": "exceeded rate",
           "refId": "A"
         }
