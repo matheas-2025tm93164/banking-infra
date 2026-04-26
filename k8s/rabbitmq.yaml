@@ -27,6 +27,8 @@ metadata:
   namespace: banking-system
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: rabbitmq
@@ -51,21 +53,31 @@ spec:
               mountPath: /var/lib/rabbitmq
           resources:
             requests:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "100m"
             limits:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "512Mi"
+              cpu: "500m"
+          # Management image + Erlang need headroom; 256Mi often never becomes Ready on Minikube.
+          startupProbe:
+            tcpSocket:
+              port: 5672
+            periodSeconds: 5
+            failureThreshold: 120
+            timeoutSeconds: 3
           readinessProbe:
-            exec:
-              command: ["rabbitmq-diagnostics", "-q", "ping"]
-            initialDelaySeconds: 15
-            periodSeconds: 10
+            tcpSocket:
+              port: 5672
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           livenessProbe:
             exec:
               command: ["rabbitmq-diagnostics", "-q", "ping"]
-            initialDelaySeconds: 30
-            periodSeconds: 20
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 3
       volumes:
         - name: data
           persistentVolumeClaim:

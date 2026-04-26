@@ -57,8 +57,24 @@ spec:
               memory: "128Mi"
               cpu: "100m"
             limits:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
       volumes:
         - name: config
           configMap:

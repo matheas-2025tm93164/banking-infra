@@ -28,6 +28,9 @@ metadata:
   namespace: banking-system
 spec:
   replicas: 1
+  # RWO PVC: only one pod may mount /data/db. RollingUpdate would start a second pod and hit DBPathInUse / mongod.lock.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: notification-db
@@ -49,21 +52,36 @@ spec:
               mountPath: /data/db
           resources:
             requests:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "100m"
             limits:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "512Mi"
+              cpu: "500m"
+          # Mongo enables auth when MONGO_INITDB_ROOT_* is set; probes must authenticate or Ready never becomes true.
           readinessProbe:
             exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 10
+              command:
+                - bash
+                - -c
+                - >-
+                  mongosh --quiet -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD"
+                  --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+            initialDelaySeconds: 20
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 6
           livenessProbe:
             exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 20
-            periodSeconds: 20
+              command:
+                - bash
+                - -c
+                - >-
+                  mongosh --quiet -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD"
+                  --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
       volumes:
         - name: data
           persistentVolumeClaim:

@@ -61,7 +61,7 @@ minikube start --cpus=4 --memory=8192
 bash k8s/deploy-all.sh
 ```
 
-The script builds Docker images inside Minikube, deploys all databases and infrastructure, then deploys the microservices.
+The script builds Docker images on the **host**, loads them into Minikube with **`minikube image load`**, deploys all databases and infrastructure, then deploys the microservices.
 
 ## Grafana Dashboard
 
